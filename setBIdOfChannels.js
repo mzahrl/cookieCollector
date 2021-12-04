@@ -28,12 +28,15 @@ async function getAndUpdateBroadcasterId(channel, isLast) {
             if (err) console.log(err);
             bId = res.body.data[0].id; //128856353
             setBroadCasterId(channel, bId).then(() => {
-                if (isLast) {
-                    process.exit(0);
-                }
+
             });
         });
     });
+    if (isLast) {
+        const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+        await delay(5000);
+        process.exit(0);
+    }
 }
 
 async function setBroadCasterId(channel, bId) {
