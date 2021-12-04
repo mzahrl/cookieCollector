@@ -554,7 +554,7 @@ async function getLastMessage(client, channel, tags, user) {
         const rows = await conn.query("SELECT * FROM Last_Messages WHERE username=?", [user]);
         if (rows.length !== 0) {
             const timeString = timeStampGenerator(rows[0].sentAt);
-            client.say(channel, `@${tags.username} the user ${rows[0].username} was last seen in ${rows[0].channel}' channel (${timeString} ago) their last message was: ${rows[0].text}`);
+            client.say(channel, `@${tags.username} the user ${rows[0].username} was last seen in ${rows[0].channel}'s channel (${timeString} ago) their last message was: ${rows[0].text}`);
         } else {
             client.say(channel, `@${tags.username} I don't have the user ${user} logged in my system`);
         }
