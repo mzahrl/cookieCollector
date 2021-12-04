@@ -32,6 +32,9 @@ const options = {
     channels: channels
 };
 
+const knownBots = ['schnozebot', 'okayegbot', 'egsbot', 'thepositivebot', 'streamlabs',
+    'streamelements', 'snusbot', 'huwobot', 'fossabot', 'doctorbot'];
+
 const client = new tmi.client(options);
 
 client.connect()
@@ -42,7 +45,7 @@ client.on('connected', (address, port) => {
 
 try {
     client.on('message', (channel, tags, message, self) => {
-        if (!messageValidator(message) || tags.username.toLowerCase() === process.env.BOT_USERNAME.toLowerCase()) {
+        if (!messageValidator(message) || tags.username.toLowerCase() === process.env.BOT_USERNAME.toLowerCase() || isKnownBot(tags.username.toLowerCase())) {
             return;
         }
         message = cleanUpMessage(message);
@@ -63,6 +66,15 @@ function cleanUpMessage(input) {
         output = output.substring(0, output.length - 1);
     }
     return output;
+}
+
+function isKnownBot(username) {
+    for (let knownBot of knownBots) {
+        if (username === knownBot) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function messageValidator(message) {

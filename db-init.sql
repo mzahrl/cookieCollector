@@ -43,7 +43,8 @@ INSERT IGNORE INTO `punishmentbot_data`.`Channels` (name, hasMod, joinedAt, stal
                                                                                               ('forsen', false, now(), true),
                                                                                               ('xqcOW', false, now(), true),
                                                                                               ('rprx', false, now(), true),
-                                                                                              ('taxi2g', false, now(), true);
+                                                                                              ('taxi2g', false, now(), true),
+                                                                                              ('sz_taisheen', false, now(), true);
 
 CREATE TABLE IF NOT EXISTS `punishmentbot_data`.`Connect_Four` (
    `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
