@@ -1,0 +1,21 @@
+{
+  "name": "punishment_bot",
+  "version": "1.0.0",
+  "description": "A Twitch Bot",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Punishment",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/translate": "^6.3.1",
+    "dotenv": "^10.0.0",
+    "elo-calculator": "^1.0.1",
+    "google-translate-api": "^2.3.0",
+    "mariadb": "^2.5.5",
+    "mysql": "^2.18.1",
+    "superagent": "^6.1.0",
+    "tmi.js": "^1.8.5"
+  }
+}
