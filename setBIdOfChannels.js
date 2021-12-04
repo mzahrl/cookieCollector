@@ -27,21 +27,22 @@ async function getAndUpdateBroadcasterId(channel, isLast) {
         request.get(getUID).set(header).end((err, res) => {
             if (err) console.log(err);
             bId = res.body.data[0].id; //128856353
-            setBroadCasterId(channel, bId);
-            if (isLast) {
-                process.exit(0);
-            }
+            setBroadCasterId(channel, bId).then(() => {
+                if (isLast) {
+                    process.exit(0);
+                }
+            });
         });
     });
 }
 
 async function setBroadCasterId(channel, bId) {
+    console.log(channel + ' ' +bId);
     let conn;
     try {
         conn = await fetchConn();
 
-        await conn.query("UPDATE Channels SET bId=? WHERE name=?",
-            [bId, channel]);
+        await conn.query("UPDATE Channels SET bId=? WHERE name=?", [bId, channel]);
     } catch (err) {
         // Manage Errors
         console.log(err);
