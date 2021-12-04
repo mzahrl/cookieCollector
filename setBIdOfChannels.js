@@ -56,7 +56,7 @@ async function getChannels(channels) {
     let conn;
     try {
         conn = await fetchConn();
-        const rows = await conn.query("SELECT * FROM Channels WHERE stalkOnly=false");
+        const rows = await conn.query("SELECT * FROM Channels");
         for (let i = 0; i < rows.length; i++) {
             channels.push(rows[i].name);
         }

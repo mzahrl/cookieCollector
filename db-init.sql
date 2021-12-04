@@ -38,7 +38,12 @@ CREATE TABLE IF NOT EXISTS `punishmentbot_data`.`Channels` (
     PRIMARY KEY (`ID`)
 );
 
-INSERT IGNORE INTO `punishmentbot_data`.`Channels` (name, hasMod, joinedAt, stalkOnly) VALUES ('mande', false, now(), false);
+INSERT IGNORE INTO `punishmentbot_data`.`Channels` (name, hasMod, joinedAt, stalkOnly) VALUES
+                                                                                              ('mande', false, now(), false),
+                                                                                              ('forsen', false, now(), true),
+                                                                                              ('xqcOW', false, now(), true),
+                                                                                              ('rprx', false, now(), true),
+                                                                                              ('taxi2g', false, now(), true);
 
 CREATE TABLE IF NOT EXISTS `punishmentbot_data`.`Connect_Four` (
    `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
