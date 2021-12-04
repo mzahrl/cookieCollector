@@ -225,13 +225,7 @@ try {
             client.say(channel, `@${tags.username} I have forwarded the bug/misuse, thank you for reporting it.`);
         }
 
-        //offline section of bot
-        /*
-        if (streamerIsOffline(channel)) {
-            connect4_parser.connect4Checker(client, channel, tags, message, pool);
-        }
-
-         */
+        //TODO: maybe fix issue with then not working properly
         streamerIsOffline(channel.substring(1)).then((res) => {
             if (!res) {
                 connect4_parser.connect4Checker(client, channel, tags, message, pool);
@@ -359,7 +353,8 @@ function noWideEmotes(message) {
     const fillBans = ['Joel',
         'THESE',
         'DIESOFCRINGE',
-        'FLASHBANG',];
+        'FLASHBANG',
+        'Wide'];
     for (let fillBan of fillBans) {
         if (message.includes(fillBan)) {
             return false;
@@ -511,7 +506,7 @@ async function getBIdFromName(channel) {
     let conn;
     try {
         conn = await fetchConn();
-        const rows = await conn.query("SELECT * FROM Channels WHERE name=?", [channel]);
+        const rows = await conn.query("SELECT * FROM Channels WHERE name=?", channel);
         if (rows.length > 0) {
             return rows[0].bId;
         } else {

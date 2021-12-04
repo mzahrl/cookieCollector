@@ -225,11 +225,12 @@ try {
             client.say(channel, `@${tags.username} I have forwarded the bug/misuse, thank you for reporting it.`);
         }
 
-        //offline section of bot
-        if (streamerIsOffline(channel)) {
-            connect4_parser.connect4Checker(client, channel, tags, message, pool);
-        }
-
+        //TODO: maybe fix issue with then not working properly
+        streamerIsOffline(channel.substring(1)).then((res) => {
+            if (!res) {
+                connect4_parser.connect4Checker(client, channel, tags, message, pool);
+            }
+        });
     });
 } catch (err) {
     console.log(err);
@@ -352,7 +353,8 @@ function noWideEmotes(message) {
     const fillBans = ['Joel',
         'THESE',
         'DIESOFCRINGE',
-        'FLASHBANG',];
+        'FLASHBANG',
+        'Wide'];
     for (let fillBan of fillBans) {
         if (message.includes(fillBan)) {
             return false;
@@ -361,7 +363,8 @@ function noWideEmotes(message) {
     return true;
 }
 
-function streamerIsOffline(channel) {
+//check if the streamer is currently streaming
+async function streamerIsOffline(channel) {
     //only check if once every 6 minutes
     if (!commandCooldownSet.has(channel)) {
         request.post(post).end((err, res) => {
@@ -372,20 +375,21 @@ function streamerIsOffline(channel) {
             setTimeout(() => {
                 commandCooldownSet.delete(channel);
             }, (res.body.expires_in));
-            const row = getBIdFromName(channel);
-            request.get(streamerURL + row.bId).set(header).end((err, res) => {
-                if (err) console.log(err);
-                if(res.body.data.length === 0) {
-                    onlineMap.set(channel, true);
-                    return true;
-                } else {
-                    onlineMap.set(channel, false);
-                    return false;
-                }
+            getBIdFromName(channel).then(function(res) {
+                request.get(streamerURL + res).set(header).end((err, res) => {
+                    if (err) console.log(err);
+                    if(res.body.data.length === 0) {
+                        onlineMap.set(channel, false);
+                        return new Promise((resolve => { resolve(true)}));
+                    } else {
+                        onlineMap.set(channel, true);
+                        return new Promise((resolve => { resolve(false)}));
+                    }
+                });
             });
         });
     } else {
-        return onlineMap.get(channel);
+        return new Promise((resolve => { resolve(onlineMap.get(channel))}));
     }
 }
 
@@ -439,6 +443,137 @@ async function userWasInactive(client, channel, tags) {
             const timeString = timeStampGenerator(rows[0].started);
             client.say(channel, `@${tags.username} is no longer ${rows[0].reason}: ${rows[0].text} (${timeString})`);
             await conn.query("UPDATE Inactive SET active=false WHERE username=?", [tags.username]);
+        }
+    } catch (err) {
+        // Manage Errors
+        console.log(err);
+    } finally {
+        // Close Connection
+        if (conn) conn.end();
+    }
+}
+
+async function setReminder(client, channel, tags, recipient, message) {
+    let conn;
+
+    try {
+        conn = await fetchConn();
+
+        await conn.query("INSERT INTO Reminders (sender, recipient, text) VALUES (?, ?, ?)",
+            [tags.username, recipient, message],
+            function (err) {
+                if (err) console.log(err);
+            });
+        client.say(channel, `@${tags.username} is will remind ${recipient} the next time they are in chat`);
+    } catch (err) {
+        // Manage Errors
+        console.log(err);
+    } finally {
+        // Close Connection
+        if (conn) conn.end();
+    }
+}
+
+async function userHasReminders(client, channel, tags) {
+    let conn;
+    try {
+        conn = await fetchConn();
+        const rows = await conn.query("SELECT * FROM Reminders WHERE recipient=?", [tags.username]);
+        let reminderMessage;
+        if (rows.length > 1) {
+            reminderMessage = 'reminders from';
+        } else {
+            reminderMessage = 'reminder from';
+        }
+        for (let i = 0; i < rows.length; i++) {
+            reminderMessage += ' ' + rows[i].sender + ': ' + rows[i].text + ',';
+        }
+        if (rows.length !== 0) {
+            reminderMessage = reminderMessage.slice(0, -1);
+            client.say(channel, `@${tags.username} ${reminderMessage}`);
+            await conn.query("DELETE FROM Reminders WHERE recipient=?", [tags.username]);
+        }
+    } catch (err) {
+        // Manage Errors
+        console.log(err);
+    } finally {
+        // Close Connection
+        if (conn) conn.end();
+    }
+}
+
+async function getBIdFromName(channel) {
+    let conn;
+    try {
+        conn = await fetchConn();
+        const rows = await conn.query("SELECT * FROM Channels WHERE name=?", channel);
+        if (rows.length > 0) {
+            return rows[0].bId;
+        } else {
+            return null;
+        }
+    } catch (err) {
+        // Manage Errors
+        console.log(err);
+    } finally {
+        // Close Connection
+        if (conn) conn.end();
+    }
+}
+
+// Fetch Connection
+async function fetchConn() {
+    let conn = await pool.getConnection();
+    return conn;
+}
+
+async function setLastMessage(channel, tags, message) {
+    let conn;
+
+    try {
+        conn = await fetchConn();
+
+        await conn.query("INSERT INTO Last_Messages (username, channel, text) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE channel=?, text=?, sentAt=now()",
+            [tags.username, channel, message, channel, message],
+            function (err) {
+                if (err) console.log(err);
+            });
+    } catch (err) {
+        // Manage Errors
+        console.log(err);
+    } finally {
+        // Close Connection
+        if (conn) conn.end();
+    }
+}
+
+async function getLastMessage(client, channel, tags, user) {
+    let conn;
+    try {
+        conn = await fetchConn();
+        const rows = await conn.query("SELECT * FROM Last_Messages WHERE username=?", [user]);
+        if (rows.length !== 0) {
+            const timeString = timeStampGenerator(rows[0].sentAt);
+            client.say(channel, `@${tags.username} the user ${rows[0].username} was last seen in ${rows[0].channel}' channel (${timeString} ago) their last message was: ${rows[0].text}`);
+        } else {
+            client.say(channel, `@${tags.username} I don't have the user ${user} logged in my system`);
+        }
+    } catch (err) {
+        // Manage Errors
+        console.log(err);
+    } finally {
+        // Close Connection
+        if (conn) conn.end();
+    }
+}
+
+async function getChannels(channels) {
+    let conn;
+    try {
+        conn = await fetchConn();
+        const rows = await conn.query("SELECT * FROM Channels WHERE stalkOnly=false");
+        for (let i = 0; i < rows.length; i++) {
+            channels.push('#' + rows[i].name);
         }
     } catch (err) {
         // Manage Errors
