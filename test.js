@@ -464,7 +464,7 @@ async function setReminder(client, channel, tags, recipient, message) {
             function (err) {
                 if (err) console.log(err);
             });
-        client.say(channel, `@${tags.username} is will remind ${recipient} the next time they are in chat`);
+        client.say(channel, `@${tags.username} I will remind ${recipient} the next time they are in chat`);
     } catch (err) {
         // Manage Errors
         console.log(err);
