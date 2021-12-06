@@ -11,7 +11,7 @@ const pool = mariadb.createPool({
     user: process.env.DB_USER,
     password: process.env.DB_USER_PW,
     database: process.env.DB_NAME,
-    connectionLimit: 100,
+    connectionLimit: 70,
 });
 
 let channels = [];

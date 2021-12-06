@@ -7,7 +7,6 @@ const fs = require('fs');
 const GOOGLE_CREDENTIALS = JSON.parse(process.env.GOOGLE_CREDENTIALS);
 const request = require('superagent');
 const connect4_parser = require('./games/connect4Parser');
-let bId;
 
 const header = {
     'Client-ID': process.env.CLIENT_ID,
@@ -20,7 +19,7 @@ const pool = mariadb.createPool({
     user: process.env.DB_USER,
     password: process.env.DB_USER_PW,
     database: process.env.DB_NAME,
-    connectionLimit: 100,
+    connectionLimit: 70,
 });
 
 let streamerURL = 'https://api.twitch.tv/helix/streams?user_id='
@@ -28,6 +27,7 @@ const post = 'https://id.twitch.tv/oauth2/token?client_id=' + process.env.CLIENT
 const archillect = 'https://archillect.com/';
 
 let channels = [];
+let channelsInfo = [];
 getChannels(channels);
 
 const options = {
@@ -42,7 +42,7 @@ const options = {
         username: process.env.BOT_USERNAME,
         password: process.env.OAUTH_TOKEN
     },
-    channels: [ '#punlshment']
+    channels: ['punlshment']
 };
 
 const client = new tmi.client(options);
@@ -55,7 +55,6 @@ const eightBallAnswers = ["It is certain.", "It is decidedly so.",
     "Better not tell you now.", "Cannot predict now.", "Concentrate and ask again.", "Don't count on it.",
     "My reply is no.", "My sources say no.", "Outlook not so good.", "Very doubtful."];
 const helpLink = 'https://docs.google.com/document/u/1/d/e/2PACX-1vQeYcqlXw7KUl5ICdBv2dH_wqNEzebX0RbqbYrNp56h7TkLf8aRt2r9SLcZPPCnUp_-I1pQO73EKjt6/pub';
-let streamerOffline = false;
 
 // Configuration for the client
 const translate = new Translate({
@@ -76,18 +75,27 @@ try {
         if (!messageValidator(message) || tags.username.toLowerCase() === process.env.BOT_USERNAME.toLowerCase()) {
             return;
         }
+        let channelPrefix = '$';
+        let channelGames = false;
+        for (let i = 0; i < channelsInfo.length; i++) {
+            if (channelsInfo[i].name === channel.substring(1)) {
+                channelPrefix = channelsInfo[i].prefix;
+                channelGames = channelsInfo[i].games;
+                break;
+            }
+        }
         message = cleanUpMessage(message);
         setLastMessage(channel.substring(1), tags, message);
         userHasReminders(client, channel, tags);
         userWasInactive(client, channel, tags);
 
         const words = message.split(' ');
-        if (words[0] === '$fuck') {
+        if (words[0] === channelPrefix + 'fuck') {
             if (words.length === 2 && words[1] !== '') {
                 client.say(channel, `You fucked ${words[1]}'s brains out! gachiHYPER`);
             }
         }
-        if (words[0] === '$remind') {
+        if (words[0] === channelPrefix + 'remind') {
             if (words.length >= 3) {
                 let recipient = words[1].toLowerCase();
                 if (recipient.startsWith('@')) {
@@ -99,52 +107,44 @@ try {
                 }
             }
         }
-        if (words[0] === '$afk') {
+        if (words[0] === channelPrefix + 'afk') {
             setInactive(client, channel, tags, words.slice(1).join(' '), 'afk');
         }
-        if (words[0] === '$gn') {
+        if (words[0] === channelPrefix + 'gn') {
             setInactive(client, channel, tags, words.slice(1).join(' '), 'sleeping');
         }
 
-        if (words[0] === '$shower') {
+        if (words[0] === channelPrefix + 'shower') {
             setInactive(client, channel, tags, words.slice(1).join(' '), 'showering');
         }
-        if (words[0] === '$rafk') {
+        if (words[0] === channelPrefix + 'rafk') {
             inactiveAgain(client, channel, tags);
         }
-        if (words[0] === '$tuck') {
+        if (words[0] === channelPrefix + 'tuck') {
             if (words.length >= 2 && words[1] !== '') {
                 let user = words[1].toLowerCase();
                 if (user.startsWith('@')) {
                     user = user.substring(1);
                 }
                 if (user !== (process.env.BOT_USERNAME).toLowerCase()) {
-                    let sender = tags.username;
-
                     client.say(channel, `@${tags.username} you tucked ${user} to bed Bedge`);
                 }
             }
         }
 
 
-        if (words[0] === '$fill') {
+        if (words[0] === channelPrefix + 'fill') {
             const message = words.slice(1).join(' ');
             if (noWideEmotes(message)) {
                 let fillMessage = "";
                 while (fillMessage.length < (300 - message.length)) {
                     fillMessage += ' ' + message;
                 }
-                /*
-                for (let i = 0; i < 30; i++) {
-                    fillMessage += message;
-                }
-
-                 */
                 client.say(channel, `${fillMessage}`);
             }
         }
 
-        if (words[0] === '$translate') {
+        if (words[0] === channelPrefix + 'translate') {
             if (words.length >= 2) {
                 let targetLanguageCode = 'en';
                 let targetLanguageName = 'English'
@@ -165,7 +165,7 @@ try {
                 }
 
 
-                if (!commandCooldownSet.has('$translate')) {
+                if (!commandCooldownSet.has('translate')) {
                     let message = words.slice(1).join(' ') + ' ';
                     if (message.startsWith('to:')) {
                         message = words.slice(2).join(' ') + ' ';
@@ -175,17 +175,17 @@ try {
                     }).catch((err) => {
                         console.log(err);
                     });
-                    commandCooldownSet.add('$translate');
+                    commandCooldownSet.add('translate');
                     setTimeout(() => {
-                        commandCooldownSet.delete('$translate');
+                        commandCooldownSet.delete('translate');
                     }, 15000);
                 } else {
-                    client.say(channel, `@${tags.username} translated is on 15 seconds cooldown try again later`);
+                    client.say(channel, `@${tags.username} translate is on 15 seconds cooldown, try again later`);
                 }
             }
         }
 
-        if (words[0] === '$stalk') {
+        if (words[0] === channelPrefix + 'stalk') {
             if (words.length >= 2 && words[1] !== '') {
                 let user = words[1].toLowerCase();
                 if (user.startsWith('@')) {
@@ -197,28 +197,28 @@ try {
             }
         }
 
-        if (words[0] === '$8ball') {
+        if (words[0] === channelPrefix + '8ball') {
             if (words.length >= 2) {
                 const answer = eightBallAnswers[Math.floor(Math.random() * eightBallAnswers.length)];
                 client.say(channel, `@${tags.username} ${answer}`);
             }
         }
 
-        if (words[0] === '$help') {
+        if (words[0] === channelPrefix + 'help') {
             client.say(channel, `@${tags.username} ${helpLink}`);
         }
-        if (words[0] === '$ra') {
+        if (words[0] === channelPrefix + 'ra') {
             const pictureNumber = Math.floor(Math.random() * 356997);
             const outputMessage = archillect + pictureNumber;
             client.say(channel, `@${tags.username} ${outputMessage}`);
         }
-        if (words[0] === '$suggestion') {
+        if (words[0] === channelPrefix + 'suggestion') {
             fs.appendFile("suggestions.txt", tags.username + " " + words.slice(1).join(' ') + '\n', (err) => {
                 if (err) console.log(err);
             });
             client.say(channel, `@${tags.username} I have forwarded the suggestion, thanks for your input.`);
         }
-        if (words[0] === '$report') {
+        if (words[0] === channelPrefix + 'report') {
             fs.appendFile("report.txt", tags.username + " " + words.slice(1).join(' ') + '\n', (err) => {
                 if (err) console.log(err);
             });
@@ -228,7 +228,7 @@ try {
         //TODO: maybe fix issue with then not working properly
         streamerIsOffline(channel.substring(1)).then((res) => {
             if (!res) {
-                connect4_parser.connect4Checker(client, channel, tags, message, pool);
+                connect4_parser.connect4Checker(client, channel, tags, message, pool, channelPrefix);
             }
         });
     });
@@ -574,6 +574,7 @@ async function getChannels(channels) {
         const rows = await conn.query("SELECT * FROM Channels WHERE stalkOnly=false");
         for (let i = 0; i < rows.length; i++) {
             channels.push('#' + rows[i].name);
+            channelsInfo.push(rows[i]);
         }
     } catch (err) {
         // Manage Errors

@@ -32,6 +32,8 @@ CREATE TABLE IF NOT EXISTS `punishmentbot_data`.`Channels` (
     `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(255) NOT NULL UNIQUE COMMENT 'The user of the last message',
     `bId` INT(10) UNSIGNED DEFAULT NULL,
+    `prefix` VARCHAR(255) NOT NULL DEFAULT '$',
+    `games` BOOLEAN NOT NULL DEFAULT true,
     `hasMod` BOOLEAN NOT NULL,
     `joinedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `stalkOnly` BOOLEAN NOT NULL,

@@ -10,12 +10,12 @@ module.exports = {
     gamePlayed : false,
     player1Draw: false,
     player2Draw: false,
-    connect4Checker : function(client, channel, tags, message, pool) {
-        const gameTag = '$c4'
+    connect4Checker : function(client, channel, tags, message, pool, channelPrefix) {
+        const gameTag = channelPrefix + 'c4'
         const words = message.split(' ');
         let gameTimeout = null;
         tags.username = tags.username.toLowerCase();
-        if (words[0] === '$c4') {
+        if (words[0] === gameTag) {
             //init a new game
             if (words.length === 3) {
                 if (words[1] === 'vs') {
