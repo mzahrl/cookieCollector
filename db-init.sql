@@ -56,3 +56,12 @@ CREATE TABLE IF NOT EXISTS `punishmentbot_data`.`Connect_Four` (
    `winStreak` INT(10) UNSIGNED NOT NULL DEFAULT 0,
    PRIMARY KEY (`ID`)
 );
+
+CREATE TABLE IF NOT EXISTS `punishmentbot_data`.`Boss_Points` (
+    `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+    `username` VARCHAR(255) NOT NULL COMMENT 'The user of the last message',
+    `channel` VARCHAR(255) NOT NULL COMMENT 'The channel the message was typed into',
+    `points` INT(10) UNSIGNED NOT NULL DEFAULT 0,
+    PRIMARY KEY (`ID`),
+    UNIQUE KEY `username_in_channel` (`username`, `channel`)
+);
