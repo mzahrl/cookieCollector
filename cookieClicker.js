@@ -25,8 +25,9 @@ client.connect()
 client.on('connected', (address, port) => {
     //get cookie every 2h1m
     getCookie();
-    setInterval(getCookie, 7260000);
 });
+
+setInterval(getCookie, 7260000);
 
 function getCookie() {
     client.say(tchannel, `!cookie`)
