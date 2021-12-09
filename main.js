@@ -47,7 +47,7 @@ const options = {
 
 const client = new tmi.client(options);
 let commandCooldownSet;
-let onlineMap;
+let offlineMap;
 let languages;
 const eightBallAnswers = ["It is certain.", "It is decidedly so.",
     "Without a doubt.", "Yes, definitely.", "You may rely on it.", "As I see it, yes.", "Most likely.",
@@ -66,7 +66,7 @@ client.connect()
 
 client.on('connected', (address, port) => {
     commandCooldownSet = new Set();
-    onlineMap = new Map();
+    offlineMap = new Map();
     fetchLanguages();
 });
 
@@ -80,9 +80,11 @@ try {
         channelPrefix = channelMap.get(channel.substring(1)).prefix;
         channelGames = channelMap.get(channel.substring(1)).games;
         message = cleanUpMessage(message);
+        /*
         setLastMessage(channel.substring(1), tags, message);
         userHasReminders(client, channel, tags);
         userWasInactive(client, channel, tags);
+         */
 
         const words = message.split(' ');
         /*
@@ -219,10 +221,10 @@ try {
             client.say(channel, `@${tags.username} I have forwarded the bug/misuse, thank you for reporting it.`);
         }
 
-        //TODO: maybe fix issue with then not working properly
+
         if (channelGames) {
             streamerIsOffline(channel.substring(1)).then((res) => {
-                if (!res) {
+                if (!res && res !== undefined) {
                     connect4_parser.connect4Checker(client, channel, tags, message, pool, channelPrefix);
                 }
             });
@@ -375,17 +377,17 @@ async function streamerIsOffline(channel) {
                 request.get(streamerURL + res).set(header).end((err, res) => {
                     if (err) console.log(err);
                     if(res.body.data.length === 0) {
-                        onlineMap.set(channel, false);
+                        offlineMap.set(channel, true);
                         return new Promise((resolve => { resolve(true)}));
                     } else {
-                        onlineMap.set(channel, true);
+                        offlineMap.set(channel, false);
                         return new Promise((resolve => { resolve(false)}));
                     }
                 });
             });
         });
     } else {
-        return new Promise((resolve => { resolve(onlineMap.get(channel))}));
+        return new Promise((resolve => { resolve(offlineMap.get(channel))}));
     }
 }
 
