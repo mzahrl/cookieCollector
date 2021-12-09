@@ -27,7 +27,7 @@ const post = 'https://id.twitch.tv/oauth2/token?client_id=' + process.env.CLIENT
 const archillect = 'https://archillect.com/';
 
 let channels = [];
-let channelsInfo = [];
+const channelMap = new Map();
 getChannels(channels);
 
 const options = {
@@ -77,19 +77,15 @@ try {
         }
         let channelPrefix = '$';
         let channelGames = false;
-        for (let i = 0; i < channelsInfo.length; i++) {
-            if (channelsInfo[i].name === channel.substring(1)) {
-                channelPrefix = channelsInfo[i].prefix;
-                channelGames = channelsInfo[i].games;
-                break;
-            }
-        }
+        channelPrefix = channelMap.get(channel.substring(1)).prefix;
+        channelGames = channelMap.get(channel.substring(1)).games;
         message = cleanUpMessage(message);
         setLastMessage(channel.substring(1), tags, message);
         userHasReminders(client, channel, tags);
         userWasInactive(client, channel, tags);
 
         const words = message.split(' ');
+        /*
         if (words[0] === channelPrefix + 'fuck') {
             if (words.length === 2 && words[1] !== '') {
                 client.say(channel, `You fucked ${words[1]}'s brains out! gachiHYPER`);
@@ -131,8 +127,6 @@ try {
                 }
             }
         }
-
-
         if (words[0] === channelPrefix + 'fill') {
             const message = words.slice(1).join(' ');
             if (noWideEmotes(message)) {
@@ -143,7 +137,6 @@ try {
                 client.say(channel, `${fillMessage}`);
             }
         }
-
         if (words[0] === channelPrefix + 'translate') {
             if (words.length >= 2) {
                 let targetLanguageCode = 'en';
@@ -207,6 +200,7 @@ try {
         if (words[0] === channelPrefix + 'help') {
             client.say(channel, `@${tags.username} ${helpLink}`);
         }
+         */
         if (words[0] === channelPrefix + 'ra') {
             const pictureNumber = Math.floor(Math.random() * 356997);
             const outputMessage = archillect + pictureNumber;
@@ -226,11 +220,13 @@ try {
         }
 
         //TODO: maybe fix issue with then not working properly
-        streamerIsOffline(channel.substring(1)).then((res) => {
-            if (!res) {
-                connect4_parser.connect4Checker(client, channel, tags, message, pool, channelPrefix);
-            }
-        });
+        if (channelGames) {
+            streamerIsOffline(channel.substring(1)).then((res) => {
+                if (!res) {
+                    connect4_parser.connect4Checker(client, channel, tags, message, pool, channelPrefix);
+                }
+            });
+        }
     });
 } catch (err) {
     console.log(err);
@@ -574,7 +570,7 @@ async function getChannels(channels) {
         const rows = await conn.query("SELECT * FROM Channels WHERE stalkOnly=false");
         for (let i = 0; i < rows.length; i++) {
             channels.push('#' + rows[i].name);
-            channelsInfo.push(rows[i]);
+            channelMap.set(rows[i].name, rows[i]);
         }
     } catch (err) {
         // Manage Errors
