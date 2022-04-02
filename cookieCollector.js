@@ -31,5 +31,5 @@ client.on('connected', (address, port) => {
 setInterval(getCookie, 7260000);
 
 function getCookie() {
-    client.say(tchannel, `${process.env.CHANNEL_PREFIX}cookie`)
+    client.say(tchannel, `${process.env.CHANNEL_PREFIX}cookie`);
 }
