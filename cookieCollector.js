@@ -2,6 +2,9 @@ require('dotenv').config();
 const tmi = require('tmi.js');
 
 const tchannel = process.env.TWITCH_CHANNEL;
+//get cookie every 2h1m
+let cookieTimer = setInterval(getCookie, 7260000);
+let cdrAvailable = true;
 
 const options = {
     options: {
@@ -27,9 +30,27 @@ client.on('connected', (address, port) => {
     getCookie();
 });
 
-//get cookie every 2h1m
-setInterval(getCookie, 7260000);
-
 function getCookie() {
     client.say(tchannel, `${process.env.CHANNEL_PREFIX}cookie`);
+    //check if cdr is available
+    if (process.env.CDR === "Y" && cdrAvailable) {
+        cdr();
+    }
+}
+
+async function cdr() {
+    await sleep(5000);
+    client.say(tchannel, `${process.env.CHANNEL_PREFIX}cdr`);
+    cdrAvailable = false;
+    setTimeout(() => {
+        cdrAvailable = true;
+    }, 10800000);
+    await sleep(5000);
+    client.say(tchannel, `${process.env.CHANNEL_PREFIX}cookie`);
+}
+
+function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
 }
