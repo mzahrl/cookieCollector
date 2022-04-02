@@ -1,5 +1,5 @@
 # Automatic cookie collector for Twitch chat
-This is a automatic cookie collector for Supibot in Twitch chat. The script will collect a cookie every 2 hours in the desired channel.
+This is an automatic cookie collector for Supibot in Twitch chat. The script will collect a cookie every 2 hours in the desired channel.
 ## How to host yourself
 - Download and install nodejs
     - For windows https://nodejs.org/en/
