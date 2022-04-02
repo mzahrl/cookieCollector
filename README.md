@@ -9,6 +9,6 @@ This is a automatic cookie collector for Supibot in Twitch chat. The script will
     - <span style="color:green">TWITCH_USERNAME</span>: Name of your twitch account
     - <span style="color:green">TWITCH_OAUTH_TOKEN</span>: OAuth token used for connecting your twitch account to the channel. See https://twitchapps.com/tmi/ for more information
     - <span style="color:green">CHANNEL_PREFIX</span>: Prefix used for the cookie command in the specified channel e.g. if the channel uses !cookie type !
-- Type ```npm install``` in a terminal of the cookieCollector folder to install all necessary dependencies for this script
+- The dependencies are already preinstalled, if you wish to install them yourself or update them, install npm and run the command ```npm install``` in a terminal of the cookieCollector folder
 - Run the script by typing ```node cookieCollector.js``` in a terminal of the cookieCollector folder
 - Enjoy your cookies!
