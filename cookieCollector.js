@@ -39,6 +39,7 @@ function getCookie() {
 }
 
 async function cdr() {
+    //sleep since the bot won't recognize commands from the same user for about 10 seconds
     await sleep(10000);
     client.say(tchannel, `${process.env.CHANNEL_PREFIX}cdr`);
     cdrAvailable = false;
