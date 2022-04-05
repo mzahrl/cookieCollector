@@ -39,13 +39,13 @@ function getCookie() {
 }
 
 async function cdr() {
-    await sleep(5000);
+    await sleep(10000);
     client.say(tchannel, `${process.env.CHANNEL_PREFIX}cdr`);
     cdrAvailable = false;
     setTimeout(() => {
         cdrAvailable = true;
     }, 10800000);
-    await sleep(5000);
+    await sleep(10000);
     client.say(tchannel, `${process.env.CHANNEL_PREFIX}cookie`);
 }
 
